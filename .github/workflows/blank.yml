@@ -2,6 +2,7 @@ name: Randomized Render Ping
 
 # Schedule GitHub Actions to run frequently (every 5 minutes is fine)
 on:
+  workflow_dispatch:
   schedule:
     - cron: '*/5 * * * *'  # every 5 minutes UTC, workflow will self-limit inside
 
