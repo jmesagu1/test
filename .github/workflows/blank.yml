@@ -24,7 +24,7 @@ jobs:
             sleep $random_seconds
 
             # Ping your Render service
-            curl -m 10 https://kpos.onrender.com/api/health
+            curl https://kpos.onrender.com/api/health
           else
             echo "Outside 8 a.m.–10 p.m. Colombia time—skipping ping."
           fi
