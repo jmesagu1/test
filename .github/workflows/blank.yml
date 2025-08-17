@@ -1,0 +1,29 @@
+name: Randomized Render Ping
+
+# Schedule GitHub Actions to run frequently (every 5 minutes is fine)
+on:
+  schedule:
+    - cron: '*/5 * * * *'  # every 5 minutes UTC, workflow will self-limit inside
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Randomized Ping to Render
+        run: |
+          # Set Colombia timezone
+          TZ="America/Bogota"
+          hour=$(date +'%H' -d "TZ=\"$TZ\" now")
+
+          # Only run between 8 a.m. and 10 p.m.
+          if [ "$hour" -ge 8 ] && [ "$hour" -lt 22 ]; then
+            # Wait a random amount of seconds between 1 and 15 minutes
+            random_seconds=$(( (RANDOM % 900) + 60 ))
+            echo "Sleeping for $random_seconds seconds before ping..."
+            sleep $random_seconds
+
+            # Ping your Render service
+            curl -m 10 https://kpos.onrender.com/api/health
+          else
+            echo "Outside 8 a.m.–10 p.m. Colombia time—skipping ping."
+          fi
