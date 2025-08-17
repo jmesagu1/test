@@ -1,30 +1,56 @@
 name: Randomized Render Ping
 
-# Schedule GitHub Actions to run frequently (every 5 minutes is fine)
 on:
   workflow_dispatch:
   schedule:
-    - cron: '*/5 * * * *'  # every 5 minutes UTC, workflow will self-limit inside
+    # Run only during the Bogota window in UTC:
+    # 08:00–22:00 COT == 13:00–03:00 UTC (next day)
+    - cron: '*/2 13-23 * * *'  # 13:00–23:58 UTC
+    - cron: '*/2 0-2 * * *'    # 00:00–02:58 UTC
 
 jobs:
   ping:
     runs-on: ubuntu-latest
     steps:
-      - name: Randomized Ping to Render
+      - name: Randomized Ping to Render (Bogota time)
+        shell: bash
         run: |
-          # Set Colombia timezone
-          TZ="America/Bogota"
-          hour=$(date +'%H' -d "TZ=\"$TZ\" now")
+          # --- current time in Bogota (no -d trick; set TZ inline) ---
+          H=$(TZ=America/Bogota date +%H)
+          M=$(TZ=America/Bogota date +%M)
+          H=$((10#$H)); M=$((10#$M))              # strip leading zeros
+          MIN=$((H*60 + M))
 
-          # Only run between 8 a.m. and 10 p.m.
-          if [ "$hour" -ge 8 ] && [ "$hour" -lt 22 ]; then
-            # Wait a random amount of seconds between 1 and 15 minutes
-            random_seconds=$(( (RANDOM % 900) + 60 ))
-            echo "Sleeping for $random_seconds seconds before ping..."
-            sleep $random_seconds
+          START=$((8*60))   # 08:00
+          END=$((22*60))    # 22:00
 
-            # Ping your Render service
-            curl https://kpos.onrender.com/api/health
-          else
-            echo "Outside 8 a.m.–10 p.m. Colombia time—skipping ping."
+          if (( MIN < START || MIN >= END )); then
+            echo "Outside 08:00–22:00 (Bogota): $(TZ=America/Bogota date)"
+            exit 0
           fi
+
+          # --- random delay: 60–900s, but never past window end ---
+          REMAIN=$(((END - MIN)*60 - 5))  # small buffer
+          if (( REMAIN < 60 )); then
+            echo "Less than 60s left in window; skipping."
+            exit 0
+          fi
+
+          DELAY=$(( (RANDOM % 900) + 60 ))
+          if (( DELAY > REMAIN )); then DELAY=$REMAIN; fi
+
+          echo "Bogota now: $(TZ=America/Bogota date) — sleeping ${DELAY}s"
+          sleep "$DELAY"
+
+          # --- re-check after sleep (window might have ended) ---
+          H2=$(TZ=America/Bogota date +%H)
+          M2=$(TZ=America/Bogota date +%M)
+          H2=$((10#$H2)); M2=$((10#$M2))
+          MIN2=$((H2*60 + M2))
+          if (( MIN2 >= END )); then
+            echo "Window ended during sleep; skipping ping."
+            exit 0
+          fi
+
+          # --- ping ---
+          curl https://kpos.onrender.com/api/health
