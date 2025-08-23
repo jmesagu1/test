@@ -53,4 +53,5 @@ jobs:
           fi
 
           # --- ping ---
-          curl https://kpos.onrender.com/api/health
+          curl https://dev-kpos-api.onrender.com/api/health
+          curl https://prod-kpos-api.onrender.com/api/health
