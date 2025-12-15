@@ -56,4 +56,4 @@ jobs:
           curl https://dev-kpos-api.onrender.com/api/health
           curl https://kpos-front-end.onrender.com
           curl https://prod-kpos-api.onrender.com/api/health
-          curl https://kpos.onrender.com
+          curl https://kpos.pro
