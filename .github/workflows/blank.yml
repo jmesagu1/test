@@ -5,7 +5,7 @@ on:
   schedule:
     # Run only during the Bogota window in UTC:
     # 08:00–22:00 COT == 13:00–03:00 UTC (next day)
-    - cron: '*/2 13-23 * * *'  # 13:00–23:58 UTC
+    - cron: '*/2 10-23 * * *'  # 13:00–23:58 UTC
     - cron: '*/2 0-2 * * *'    # 00:00–02:58 UTC
 
 jobs:
@@ -21,7 +21,7 @@ jobs:
           H=$((10#$H)); M=$((10#$M))              # strip leading zeros
           MIN=$((H*60 + M))
 
-          START=$((8*60))   # 08:00
+          START=$((6*60))   # 06:00
           END=$((22*60))    # 22:00
 
           if (( MIN < START || MIN >= END )); then
